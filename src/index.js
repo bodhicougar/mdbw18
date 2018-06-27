@@ -9,6 +9,7 @@ import PropTypes from 'prop-types'
 import Page from "./components/Page";
 import Login from "./components/Login";
 import Journal from "./components/Journal";
+
 // MongoDB Stitch
 import {
   Stitch,
@@ -25,10 +26,10 @@ class StitchApp extends React.Component {
     super(props);
     this.appId = props.appId;
     this.client = Stitch.initializeDefaultAppClient(this.appId);
-    this.mongodb = this.client.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
-  
+    // this.mongodb = this.client.getServiceClient(RemoteMongoClient.factory, "mongodb-atlas");
+    
     const isAuthed = this.client.auth.isLoggedIn;
-    this.state = { isAuthed };
+    this.state = { isAuthed }
   }
 
   login = async (email, password) => {
@@ -36,7 +37,7 @@ class StitchApp extends React.Component {
     if (isAuthed) {
       return;
     }
-
+  
     const credential = new UserPasswordCredential(email, password);
     await this.client.auth.loginWithCredential(credential);
     this.setState({ isAuthed: true });
@@ -46,31 +47,26 @@ class StitchApp extends React.Component {
     this.client.auth.logout();
     this.setState({ isAuthed: false });
   };
-
+  
   render() {
     const { isAuthed } = this.state;
-    const currentUser = isAuthed && this.client.auth.currentUser;
-    
+    const currentUser = isAuthed && this.client.auth.user;
+  
     return (
-      <Page
-        currentUser={currentUser}
-        logoutCurrentUser={this.logout}
-      >{
-        isAuthed ? (
-          <Journal
-            mongodb={this.mongodb}
-            currentUser={currentUser}
-          />
+      <Page currentUser={currentUser} logoutCurrentUser={this.logout}>
+        {isAuthed ? (
+          <Journal mongodb={this.mongodb} currentUser={currentUser} />
         ) : (
           <Login loginUser={this.login} />
-        )
-      }
+        )}
       </Page>
     );
   }
+  
+
 }
 
 ReactDOM.render(
-  <StitchApp appId="mdbw18-mltgy" />,
+  <StitchApp appId="dailyjournal-tamgo" />,
   document.getElementById("root")
 );
